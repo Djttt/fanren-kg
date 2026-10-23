@@ -49,7 +49,8 @@ npm run preview        # 访问 http://localhost:4173/fanren-kg/
 - **大文件（Git LFS）**：两个 `.onnx` 模型（Qwen3-0.6B 约 543MB、bge-small-zh-v1.5 约 24MB）
   通过 **Git LFS** 存储（规则见 `.gitattributes` 的 `*.onnx`），避免触发 GitHub 100MB 大文件保护。
   - 克隆/拉取需要在本机安装 git-lfs（`git lfs install`，一次性）。
-  - CI 的 `actions/checkout` 步骤会**自动拉取 LFS 对象**，构建产物里是真实模型文件；
+  - CI 的 `actions/checkout` 默认**不拉取** LFS 对象（`lfs` 输入默认 `false`，会留下 134 字节指针文件）；
+    workflow 里已显式配置 `lfs: true`，构建产物里才是真实模型文件。
     Pages 部署走 **Actions 工件**（`upload-pages-artifact` + `deploy-pages`），伺服的是真实文件而非 LFS 指针。
   - GitHub LFS 免费额度：1GB 存储 + 1GB 下载带宽；当前 LFS 占用约 0.57GB，够用。
   - 若将来把部署方式改成"dist/ 直接推分支"，必须让分支里是真实文件，
