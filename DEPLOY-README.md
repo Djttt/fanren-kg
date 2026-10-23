@@ -16,10 +16,11 @@
 
    ```bash
    cd site-ghpages
+   git lfs install                          # 一次性；.onnx 模型文件走 LFS
    git init && git add -A && git commit -m "deploy: GitHub Pages version"
    git branch -M main
    git remote add origin git@github.com:<你>/fanren-kg.git
-   git push -u origin main
+   git push -u origin main                  # LFS 对象随 push 一并上传
    ```
 
 2. 仓库 **Settings → Pages**：Source 保持 “GitHub Actions”（workflow 会自动触发构建+部署）。
@@ -45,12 +46,13 @@ npm run preview        # 访问 http://localhost:4173/fanren-kg/
 
 ## 已知限制
 
-- **大文件**：`public/models/onnx-community-Qwen3-0.6B-ONNX/onnx/model.onnx` 约 543MB。
-  GitHub 默认启用"大文件保护"（Large file protection），会**硬拒**新增 >100MB 的文件
-  （push 报错 `exceeds GitHub's file size limit of 100.00 MB`）。
-  仓库 owner 可在 Settings → General → Version control 取消勾选 Large files 来关闭该保护
-  （关闭后 <2.5GB 可推送）；本仓库已关闭，重新 clone 后如保护被重置需再次关闭。
-  GitHub Pages 本身能正常托管并伺服该文件，但仓库克隆会变慢。
-  **不要**用 Git LFS 替换它 —— Pages 只伺服 git 仓库内的原始文件，LFS 指针会导致模型 404。
+- **大文件（Git LFS）**：两个 `.onnx` 模型（Qwen3-0.6B 约 543MB、bge-small-zh-v1.5 约 24MB）
+  通过 **Git LFS** 存储（规则见 `.gitattributes` 的 `*.onnx`），避免触发 GitHub 100MB 大文件保护。
+  - 克隆/拉取需要在本机安装 git-lfs（`git lfs install`，一次性）。
+  - CI 的 `actions/checkout` 步骤会**自动拉取 LFS 对象**，构建产物里是真实模型文件；
+    Pages 部署走 **Actions 工件**（`upload-pages-artifact` + `deploy-pages`），伺服的是真实文件而非 LFS 指针。
+  - GitHub LFS 免费额度：1GB 存储 + 1GB 下载带宽；当前 LFS 占用约 0.57GB，够用。
+  - 若将来把部署方式改成"dist/ 直接推分支"，必须让分支里是真实文件，
+    LFS 指针会导致模型 404（分支模式下 Pages 只伺服 git 仓库内的原始文件）。
 - 若将来想给仓库瘦身：把 `public/models/`、`public/ort/`、`public/vectors.*` 移出仓库，
   改为部署后从发布附件下载放入（站点缺模型时会自动回落到关键词检索，不会白屏）。
