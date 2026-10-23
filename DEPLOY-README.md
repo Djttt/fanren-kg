@@ -45,9 +45,12 @@ npm run preview        # 访问 http://localhost:4173/fanren-kg/
 
 ## 已知限制
 
-- **大文件**：`public/models/onnx-community-Qwen3-0.6B-ONNX/onnx/model.onnx` 约 570MB。
-  GitHub 对 >100MB 的文件会提示警告（可推送，<2.5GB 不阻断），但仓库克隆会变慢；
-  GitHub Pages 本身能正常托管并伺服该文件。
+- **大文件**：`public/models/onnx-community-Qwen3-0.6B-ONNX/onnx/model.onnx` 约 543MB。
+  GitHub 默认启用"大文件保护"（Large file protection），会**硬拒**新增 >100MB 的文件
+  （push 报错 `exceeds GitHub's file size limit of 100.00 MB`）。
+  仓库 owner 可在 Settings → General → Version control 取消勾选 Large files 来关闭该保护
+  （关闭后 <2.5GB 可推送）；本仓库已关闭，重新 clone 后如保护被重置需再次关闭。
+  GitHub Pages 本身能正常托管并伺服该文件，但仓库克隆会变慢。
   **不要**用 Git LFS 替换它 —— Pages 只伺服 git 仓库内的原始文件，LFS 指针会导致模型 404。
 - 若将来想给仓库瘦身：把 `public/models/`、`public/ort/`、`public/vectors.*` 移出仓库，
   改为部署后从发布附件下载放入（站点缺模型时会自动回落到关键词检索，不会白屏）。
